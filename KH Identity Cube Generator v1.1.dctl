@@ -1,0 +1,39 @@
+// Identity 3D LUT Generator DCTL by Kaur Hendrikson v1.1
+
+DEFINE_UI_PARAMS(p_Cube, Cube Size, DCTLUI_SLIDER_INT, 33, 2, 257, 1);
+DEFINE_UI_PARAMS(p_Ramp, Show Ramp, DCTLUI_CHECK_BOX, 0)
+
+__DEVICE__ float3 transform(int p_Width, int p_Height, int p_X, int p_Y, float p_R, float p_G, float p_B) {
+    float r = 0.0f;
+    float g = 0.0f;
+    float b = 0.0f;
+
+    float width = (float)p_Width;
+    float sq_size = width / p_Cube;
+    float height = sq_size;
+	float X = (float)p_X;
+	float Y = (p_Height - sq_size) + (height - (p_Y));
+
+    if ((p_Height - p_Y) > sq_size * (p_Ramp ? 2 : 1)) return make_float3(p_R, p_G, p_B);
+    else if (p_Ramp && (p_Height - p_Y) > sq_size) { // Ramp
+        r = g = b = X / width;
+    } else { // Identity Cube
+        float fmodXp = _fmod(X-1, sq_size);
+        float fmodX = _fmod(X, sq_size);
+        float fmodXn = _fmod(X+1, sq_size);
+
+        // Red, deal with first and last pixel of each layer seperately
+        if (fmodX < fmodXp) r = 0.0f;
+        else if (fmodXn < fmodX) r = 1.0f;
+        else r = (fmodX)/(sq_size - 1); // Normal red calculation
+
+        // Green, deal with last pixel of each layer seperately
+        if (Y >= sq_size-1) g = 1.0f;
+        else g = (Y-1)/(height-1); // Normal green calculation
+
+        // Blue, works out of the box :)
+        b = (_floorf((X) / sq_size)) * (1.0f / (p_Cube - 1));
+    }
+
+    return make_float3(r, g, b);
+}
