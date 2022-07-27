@@ -1,0 +1,21 @@
+// DCTL by Kaur Hendrikson https://github.com/KaurHendrikson/DaVinci-Resolve-DCTLs
+// Formula from https://docs.acescentral.com/specifications/acescc
+
+__DEVICE__ float3 fromACEScc (float3 in) {
+    float3 out;
+
+    float a = 9.72;
+    float b = 17.52;
+    float c = 0.0000152587890625; //2^-16
+    float d = _log2f(65504);
+
+    out.x = in.x <= (a - 15) / b ? (_powf(2, in.x*b-a) - c) * 2 : in.x < (d + a) / b ? _powf(2, in.x*b-a) - c : 65504;
+    out.y = in.y <= (a - 15) / b ? (_powf(2, in.y*b-a) - c) * 2 : in.y < (d + a) / b ? _powf(2, in.y*b-a) - c : 65504;
+    out.z = in.z <= (a - 15) / b ? (_powf(2, in.z*b-a) - c) * 2 : in.z < (d + a) / b ? _powf(2, in.z*b-a) - c : 65504;
+
+    return out;
+}
+
+__DEVICE__ float3 transform(int p_Width, int p_Height, int p_X, int p_Y, float p_R, float p_G, float p_B) {
+    return fromACEScc(make_float3(p_R, p_G, p_B));
+}

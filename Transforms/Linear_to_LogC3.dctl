@@ -1,0 +1,24 @@
+// DCTL by Kaur Hendrikson https://github.com/KaurHendrikson/DaVinci-Resolve-DCTLs
+// Formula from https://www.arri.com/en/learn-help/learn-help-camera-system/alexa-35-workflows/log-c
+
+__DEVICE__ float3 toLogC3 (float3 in) {
+    float3 out;
+
+    float cut = 0.010591;
+    float a = 5.555556;
+    float b = 0.052272;
+    float c = 0.247190;
+    float d = 0.385537;
+    float e = 5.367655;
+    float f = 0.092809;
+
+    out.x = (in.x > cut) ? c * log10(a * in.x + b) + d: e * in.x + f;
+    out.y = (in.y > cut) ? c * log10(a * in.y + b) + d: e * in.y + f;
+    out.z = (in.z > cut) ? c * log10(a * in.z + b) + d: e * in.z + f;
+
+    return out;
+}
+
+__DEVICE__ float3 transform(int p_Width, int p_Height, int p_X, int p_Y, float p_R, float p_G, float p_B) {
+    return toLogC3(make_float3(p_R, p_G, p_B));
+}

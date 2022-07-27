@@ -1,0 +1,22 @@
+// DCTL by Kaur Hendrikson https://github.com/KaurHendrikson/DaVinci-Resolve-DCTLs
+// Formula from https://documents.blackmagicdesign.com/InformationNotes/DaVinci_Resolve_17_Wide_Gamut_Intermediate.pdf
+
+__DEVICE__ float3 fromDWG (float3 in) {
+    float3 out;
+
+    float a = 0.0075;
+    float b = 7.0;
+    float c = 0.07329248;
+    float m = 10.44426855;
+    float log_cut = 0.02740668;
+
+    out.x = in.x > log_cut ? _powf(2.0f, (in.x / c) - b) - a : in.x / m;
+    out.y = in.y > log_cut ? _powf(2.0f, (in.y / c) - b) - a : in.y / m;
+    out.z = in.z > log_cut ? _powf(2.0f, (in.z / c) - b) - a : in.z / m;
+
+    return out;
+}
+
+__DEVICE__ float3 transform(int p_Width, int p_Height, int p_X, int p_Y, float p_R, float p_G, float p_B) {
+    return fromDWG(make_float3(p_R, p_G, p_B));
+}
