@@ -12,7 +12,7 @@ Saturates image similar to reality where more saturated colors also become darke
 Similar to SubSat with seperate Cyan, Magenta & Yellow channels in addition to a master slider.
 ### Identity Cube Generator
 Generates a flattened LUT cube and (optional) gray ramp at the bottom of the frame.
-### Gamma Encoding / Decoding Transforms
+### Transforms
 Transforms between different gamma curves.
 
 ---
