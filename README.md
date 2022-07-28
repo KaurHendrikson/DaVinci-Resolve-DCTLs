@@ -2,6 +2,7 @@
 *Different DaVinci Color Space Transforms by Kaur Hendrikson*
 
 If you like what I do, feel free to buy me a coffee over at [Buy Me a Coffee](https://www.buymeacoffee.com/kaurhendrikson)
+or buy one of my premium DCTLs over at [Gumroad](https://kaurh.gumroad.com)
 
 ---
 
