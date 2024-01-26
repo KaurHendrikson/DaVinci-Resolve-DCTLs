@@ -1,0 +1,9 @@
+__DEVICE__ float powCf(float base, float exp) {
+    return _copysignf(_powf(_fabs(base), exp), base);
+}
+
+__DEVICE__ float bellCurve(float in, float center, float width) {
+    float distance = _fabs(in - center);
+    float exponent = -powCf(distance, 2) / powCf(width, 2);
+    return _expf(exponent);
+}
