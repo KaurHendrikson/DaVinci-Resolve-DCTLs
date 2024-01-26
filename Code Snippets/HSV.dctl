@@ -1,0 +1,53 @@
+#line 2 // This line makes line numbers appear correctly in the log file
+// DCTL by Kaur Hendrikson
+
+__DEVICE__ float3 RGBtoHSV(float3 in) {
+    float max = _fmaxf(in.x, _fmaxf(in.y, in.z)); // Maximum component value
+    float min = _fminf(in.x, _fminf(in.y, in.z)); // Minimum component value
+    float d = max - min; // Difference between maximum and minimum
+    float h; // Hue
+    float s = (max == 0 ? 0 : d / max); // Saturation
+ 
+    if (max == min) h = 0; // No difference, hue is 0
+    else if (max == in.x) h = (in.y - in.z) + d * (in.y < in.z ? 6: 0), h /= 6 * d; // Red is the maximum component
+    else if (max == in.y) h = (in.z - in.x) + d * 2, h /= 6 * d; // Green is the maximum component
+    else if (max == in.z) h = (in.x - in.y) + d * 4, h /= 6 * d; // Blue is the maximum component
+
+    return make_float3(h, s, max); // Return HSV color
+}
+
+__DEVICE__ float3 HSVtoRGB(float3 in) {
+    float3 out;
+
+    float h = in.x; // Hue
+    float s = in.y; // Saturation
+    float v = in.z; // Value
+    float i = _floorf(h * 6); // Integer part of hue value multiplied by 6
+    float f = h * 6 -i; // Fractional part of hue value multiplied by 6
+    float p = v * (1 - s); // Intermediate value for calculation
+    float q = v * (1 - f * s); // Intermediate value for calculation
+    float t = v * (1 - (1 - f) * s); // Intermediate value for calculation
+
+    float r = _fmod(i, 6); // Wrap hue value to range [0, 6)
+
+    if (r == 0) out.x = v, out.y = t, out.z = p; // Calculate red, green, and blue components
+    else if (r == 1) out.x = q, out.y = v, out.z = p; // Calculate red, green, and blue components
+    else if (r == 2) out.x = p, out.y = v, out.z = t; // Calculate red, green, and blue components
+    else if (r == 3) out.x = p, out.y = q, out.z = v; // Calculate red, green, and blue components
+    else if (r == 4) out.x = t, out.y = p, out.z = v; // Calculate red, green, and blue components
+    else if (r == 5) out.x = v, out.y = p, out.z = q; // Calculate red, green, and blue components
+
+    return out; // Return RGB color
+}
+
+DEFINE_UI_PARAMS(p_Invert, Invert, DCTLUI_CHECK_BOX, 0)
+
+__DEVICE__ float3 transform(int p_Width, int p_Height, int p_X, int p_Y, float p_R, float p_G, float p_B) {
+    float3 inRGB = make_float3(p_R, p_G, p_B);
+    float3 out = inRGB;
+
+    if (p_Invert) out = HSVtoRGB(out);
+    else out = RGBtoHSV(out);
+    
+    return out;
+}

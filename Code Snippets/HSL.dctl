@@ -1,0 +1,69 @@
+#line 2 // This line makes line numbers appear correctly in the log file
+// DCTL by Kaur Hendrikson
+
+__DEVICE__ float3 RGBtoHSL(float3 in) {
+    float r = in.x;
+    float g = in.y;
+    float b = in.z;
+
+    float h = 0; // Hue
+    float s = 0; // Saturation
+    float l = 0; // Lightness
+
+    float cmax = _fmaxf(r, _fmaxf(g, b)); // Maximum component value
+    float cmin = _fminf(r, _fminf(g, b)); // Minimum component value
+    float delta = cmax - cmin; // Difference between maximum and minimum
+
+    if (delta == 0) h = 0; // No difference, hue is 0
+    else if (cmax == r) h = (g - b) / delta; // Red is the maximum component
+    else if (cmax == g) h = (b - r) / delta + 2; // Green is the maximum component
+    else if (cmax == b) h = (r - g) / delta + 4; // Blue is the maximum component
+    h /= 6; // Normalize hue value to range [0, 1]
+
+    l = (cmax + cmin) / 2; // Calculate lightness
+    
+    s = delta == 0 ? 0 : l <= .5f ? delta / (cmax + cmin) : delta / (2.0f - delta); // Calculate saturation
+    
+    return make_float3(h, s, l); // Return HSL color
+}
+
+__DEVICE__ float3 HSLtoRGB(float3 in) {
+    float h = in.x; // Hue
+    float s = in.y; // Saturation
+    float l = in.z; // Lightness
+    
+	float r = 0; // Red
+	float g = 0; // Green
+	float b = 0; // Blue
+
+    if (s == 0) return make_float3(l, l, l); // If saturation is 0, return grayscale color
+
+    float t1 = l < .5f ? l * (s + 1.0f) : l + s - l * s; // Temporary value 1
+    float t2 = l * 2 - t1; // Temporary value 2
+
+    float tR = h + .333f; // Temporary red hue value
+    float tG = h; // Temporary green hue value
+    float tB = h - .333f; // Temporary blue hue value
+
+    tR = tR > 1 ? tR - 1 : tR < 0 ? tR + 1 : tR; // Wrap hue value to range [0, 1]
+    tG = tG > 1 ? tG - 1 : tG < 0 ? tG + 1 : tG; // Wrap hue value to range [0, 1]
+    tB = tB > 1 ? tB - 1 : tB < 0 ? tB + 1 : tB; // Wrap hue value to range [0, 1]
+
+    r = 6 * tR < 1 ? t2 + (t1 - t2) * 6 * tR : 2 * tR < 1 ? t1 : 3 * tR < 2 ? t2 + (t1 - t2) * (.666f - tR) * 6 : t2; // Calculate red component
+    g = 6 * tG < 1 ? t2 + (t1 - t2) * 6 * tG : 2 * tG < 1 ? t1 : 3 * tG < 2 ? t2 + (t1 - t2) * (.666f - tG) * 6 : t2; // Calculate green component
+    b = 6 * tB < 1 ? t2 + (t1 - t2) * 6 * tB : 2 * tB < 1 ? t1 : 3 * tB < 2 ? t2 + (t1 - t2) * (.666f - tB) * 6 : t2; // Calculate blue component
+
+    return make_float3(r, g, b); // Return RGB color
+}
+
+DEFINE_UI_PARAMS(p_Invert, Invert, DCTLUI_CHECK_BOX, 0)
+
+__DEVICE__ float3 transform(int p_Width, int p_Height, int p_X, int p_Y, float p_R, float p_G, float p_B) {
+    float3 inRGB = make_float3(p_R, p_G, p_B);
+    float3 out = inRGB;
+
+    if (p_Invert) out = HSLtoRGB(out);
+    else out = RGBtoHSL(out);
+    
+    return out;
+}
