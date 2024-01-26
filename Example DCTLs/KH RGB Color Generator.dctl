@@ -1,0 +1,24 @@
+#line 2 // This line makes line numbers appear correctly in the log file
+// DCTL by Kaur Hendrikson
+
+// UI parameter definitions
+DEFINE_UI_PARAMS(p_Red, Red, DCTLUI_SLIDER_FLOAT, 0, 0, 255, 0.001)
+DEFINE_UI_PARAMS(p_Green, Green, DCTLUI_SLIDER_FLOAT, 0, 0, 255, 0.001)
+DEFINE_UI_PARAMS(p_Blue, Blue, DCTLUI_SLIDER_FLOAT, 0, 0, 255, 0.001)
+
+// Main function
+__DEVICE__ float3 transform(int p_Width, int p_Height, int p_X, int p_Y, float p_R, float p_G, float p_B) {
+    float3 inRGB = make_float3(p_R, p_G, p_B);
+    float3 out = inRGB;
+
+    // Math goes here
+    out.x = p_Red / 255;
+    out.y = p_Green / 255;
+    out.z = p_Blue / 255;
+
+    // Draw a green line at the bottom to indicate the DCTL is running without errors
+    // if (p_Y < 10) out = make_float3(0, 1, 0);
+
+    // Output the final result
+    return out;
+}

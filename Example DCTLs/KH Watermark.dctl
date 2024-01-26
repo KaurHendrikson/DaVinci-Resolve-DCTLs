@@ -1,0 +1,25 @@
+#line 2 // This line makes line numbers appear correctly in the log file
+// DCTL by Kaur Hendrikson
+
+__DEVICE__ float3 drawWatermarkOverlay(float3 inRGB, float f, float size, float3 color, float opacity, float X, float Y) {
+    float3 out = inRGB;
+
+    if (size > _fmod(X + (f/2), f) && _fmod(Y + (f/2), f) < size) out += color * opacity;
+
+    return out;
+}
+
+// Main function
+__DEVICE__ float3 transform(int p_Width, int p_Height, int p_X, int p_Y, float p_R, float p_G, float p_B) {
+    float3 inRGB = make_float3(p_R, p_G, p_B);
+    float3 out = inRGB;
+
+    // Display watermark with frequency 128, square size of 8, white color, 30% opacity.
+    out = drawWatermarkOverlay(out, 128, 8, make_float3(1, 1, 1), 0.3, p_X, p_Y);
+
+    // Draw a green line at the bottom to indicate the DCTL is running without errors
+    // if (p_Y < 10) out = make_float3(0, .5, 0);
+
+    // Output the final result
+    return out;
+}
