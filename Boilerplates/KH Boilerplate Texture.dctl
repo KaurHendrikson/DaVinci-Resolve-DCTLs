@@ -1,0 +1,33 @@
+#line 2 // This line makes line numbers appear correctly in the log file
+// DCTL by Kaur Hendrikson
+
+__DEVICE__ inline float3 pixelFromXY(__TEXTURE__ p_TexR, __TEXTURE__ p_TexG, __TEXTURE__ p_TexB, int p_X, int p_Y) {
+    return make_float3(
+        _tex2D(p_TexR, p_X, p_Y),
+        _tex2D(p_TexG, p_X, p_Y),
+        _tex2D(p_TexB, p_X, p_Y)
+    );
+}
+
+// UI parameter definitions
+DEFINE_UI_PARAMS(p_FloatSlider1, Float Slider Name, DCTLUI_SLIDER_FLOAT, 0, 0, 1, 0.001)
+DEFINE_UI_PARAMS(p_IntSlider1, Int Slider Name, DCTLUI_SLIDER_INT, 0, 0, 100, 1)
+DEFINE_UI_PARAMS(p_ValueBox1, Value Box Name, DCTLUI_VALUE_BOX, 0)
+DEFINE_UI_PARAMS(p_CheckBox1, Check Box Name, DCTLUI_CHECK_BOX, 0)
+DEFINE_UI_PARAMS(p_Dropdown1, Dropdown Name, DCTLUI_COMBO_BOX, 0, {item1, item2}, {Item 1, Item 2})
+
+// Main function
+__DEVICE__ float3 transform(int p_Width, int p_Height, int p_X, int p_Y, __TEXTURE__ p_TexR, __TEXTURE__ p_TexG, __TEXTURE__ p_TexB) {
+    float3 inRGB = pixelFromXY(p_TexR, p_TexG, p_TexB, p_X, p_Y);
+    float3 out = inRGB;
+
+    // Math goes here
+
+
+
+    // Draw a green line at the bottom to indicate the DCTL is running without errors
+    if (p_Y < 10) out = make_float3(0, 1, 0);
+
+    // Output the final result
+    return out;
+}
