@@ -1,0 +1,196 @@
+#line 2 // This line makes line numbers appear correctly in the log file
+// DCTL by Kaur Hendrikson
+
+__DEVICE__ float3 fromACEScc (float3 in) {
+    float3 out;
+
+    float a = 9.72;
+    float b = 17.52;
+    float c = 0.0000152587890625; //2^-16
+    float d = _log2f(65504);
+
+    out.x = in.x <= (a - 15) / b ? (_powf(2, in.x*b-a) - c) * 2 : in.x < (d + a) / b ? _powf(2, in.x*b-a) - c : 65504;
+    out.y = in.y <= (a - 15) / b ? (_powf(2, in.y*b-a) - c) * 2 : in.y < (d + a) / b ? _powf(2, in.y*b-a) - c : 65504;
+    out.z = in.z <= (a - 15) / b ? (_powf(2, in.z*b-a) - c) * 2 : in.z < (d + a) / b ? _powf(2, in.z*b-a) - c : 65504;
+
+    return out;
+}
+
+__DEVICE__ float3 toACEScc (float3 in) {
+    float3 out;
+
+    float a = 9.72;
+    float b = 17.52;
+    float c = 0.0000152587890625; //2^-16
+    float lin_cut = 0.000030517578125; //2^-15
+    
+    out.x = in.x <= 0 ? (_log2f(c) + a) / b : in.x < lin_cut ? (_log2f(c + in.x * .5) + a) / b : (_log2f(in.x) + a) / b;
+    out.y = in.y <= 0 ? (_log2f(c) + a) / b : in.y < lin_cut ? (_log2f(c + in.y * .5) + a) / b : (_log2f(in.y) + a) / b;
+    out.z = in.z <= 0 ? (_log2f(c) + a) / b : in.z < lin_cut ? (_log2f(c + in.z * .5) + a) / b : (_log2f(in.z) + a) / b;
+
+    return out;
+}
+
+__DEVICE__ float3 fromACEScct (float3 in) {
+    float3 out;
+
+    float a = 10.5402377416545;
+    float b = 0.0729055341958355;
+    float c = 9.72;
+    float d = 17.52;
+    float e = _log2f(65504);
+    float lin_cut = 0.155251141552511;
+
+    out.x = in.x <= lin_cut ? (in.x - b) / a : in.x < (e + c) / d ? _powf(2, in.x*d-c) : 65504;
+    out.y = in.y <= lin_cut ? (in.y - b) / a : in.y < (e + c) / d ? _powf(2, in.y*d-c) : 65504;
+    out.z = in.z <= lin_cut ? (in.z - b) / a : in.z < (e + c) / d ? _powf(2, in.z*d-c) : 65504;
+
+    return out;
+}
+
+__DEVICE__ float3 toACEScct (float3 in) {
+    float3 out;
+
+    float a = 10.5402377416545;
+    float b = 0.0729055341958355;
+    float c = 9.72;
+    float d = 17.52;
+    float e = 0.0078125;
+
+    out.x = in.x <= e ? a * in.x + b : (_log2f(in.x) + c) / d;
+    out.y = in.y <= e ? a * in.y + b : (_log2f(in.y) + c) / d;
+    out.z = in.z <= e ? a * in.z + b : (_log2f(in.z) + c) / d;
+
+    return out;
+}
+
+__DEVICE__ float3 fromLogC3 (float3 in) {
+    float3 out;
+
+    float cut = 0.010591;
+    float a = 5.555556;
+    float b = 0.052272;
+    float c = 0.247190;
+    float d = 0.385537;
+    float e = 5.367655;
+    float f = 0.092809;
+
+    out.x = (in.x > e * cut + f) ? (_powf(10, (in.x - d) / c) - b) / a : (in.x - f) / e;
+    out.y = (in.y > e * cut + f) ? (_powf(10, (in.y - d) / c) - b) / a : (in.y - f) / e;
+    out.z = (in.z > e * cut + f) ? (_powf(10, (in.z - d) / c) - b) / a : (in.z - f) / e;
+
+    return out;
+}
+
+__DEVICE__ float3 toLogC3 (float3 in) {
+    float3 out;
+
+    float cut = 0.010591;
+    float a = 5.555556;
+    float b = 0.052272;
+    float c = 0.247190;
+    float d = 0.385537;
+    float e = 5.367655;
+    float f = 0.092809;
+
+    out.x = (in.x > cut) ? c * log10(a * in.x + b) + d: e * in.x + f;
+    out.y = (in.y > cut) ? c * log10(a * in.y + b) + d: e * in.y + f;
+    out.z = (in.z > cut) ? c * log10(a * in.z + b) + d: e * in.z + f;
+
+    return out;
+}
+
+__DEVICE__ float3 fromLogC4 (float3 in) {
+    float3 out;
+
+    float a = (_powf(2.0, 18.0) - 16.0) / 117.45;
+    float b = (1023.0 - 95.0) / 1023.0;
+    float c = 95.0 / 1023.0;
+    float s = (7 * _logf(2) * _powf(2.0, 7 - 14 * c / b)) / (a * b);
+    float t = (_powf(2.0, 14.0 * (-c / b) + 6.0) - 64.0) / a;
+
+    out.x = in.x < 0.0 ? in.x * s + t : (_powf(2.0, 14.0 * (in.x - c) / b + 6.0) - 64.0) / a;
+    out.y = in.y < 0.0 ? in.y * s + t : (_powf(2.0, 14.0 * (in.y - c) / b + 6.0) - 64.0) / a;
+    out.z = in.z < 0.0 ? in.z * s + t : (_powf(2.0, 14.0 * (in.z - c) / b + 6.0) - 64.0) / a;
+
+    return out;
+}
+
+__DEVICE__ float3 toLogC4 (float3 in) {
+    float3 out;
+
+    float a = (_powf(2.0, 18.0) - 16.0) / 117.45;
+    float b = (1023.0 - 95.0) / 1023.0;
+    float c = 95.0 / 1023.0;
+    float s = (7 * _logf(2) * _powf(2.0, 7 - 14 * c / b)) / (a * b);
+    float t = (_powf(2.0, 14.0 * (-c / b) + 6.0) - 64.0) / a;
+
+    out.x = in.x < t ? (in.x - t) / s : (_log2f( a * in.x + 64.0) - 6.0) / 14.0 * b + c;
+    out.y = in.y < t ? (in.y - t) / s : (_log2f( a * in.y + 64.0) - 6.0) / 14.0 * b + c;
+    out.z = in.z < t ? (in.z - t) / s : (_log2f( a * in.z + 64.0) - 6.0) / 14.0 * b + c;
+
+    return out;
+}
+
+__DEVICE__ float3 fromDWG (float3 in) {
+    float3 out;
+
+    float a = 0.0075;
+    float b = 7.0;
+    float c = 0.07329248;
+    float m = 10.44426855;
+    float log_cut = 0.02740668;
+
+    out.x = in.x > log_cut ? _powf(2.f, (in.x / c) - b) - a : in.x / m;
+    out.y = in.y > log_cut ? _powf(2.f, (in.y / c) - b) - a : in.y / m;
+    out.z = in.z > log_cut ? _powf(2.f, (in.z / c) - b) - a : in.z / m;
+
+    return out;
+}
+
+__DEVICE__ float3 toDWG (float3 in) {
+    float3 out;
+
+    float a = 0.0075;
+    float b = 7.0;
+    float c = 0.07329248;
+    float m = 10.44426855;
+    float lin_cut = 0.00262409;
+
+    out.x = in.x > lin_cut ? (_log2f(in.x + a) + b) * c : out.x = in.x * m;
+    out.y = in.y > lin_cut ? (_log2f(in.y + a) + b) * c : out.y = in.y * m;
+    out.z = in.z > lin_cut ? (_log2f(in.z + a) + b) * c : out.z = in.z * m;
+
+    return out;
+}
+
+DEFINE_UI_PARAMS(p_Exp, Exposure, DCTLUI_SLIDER_FLOAT, 0, -10, 10, 0.001)
+DEFINE_UI_PARAMS(p_TransferFunction, Transfer Function, DCTLUI_COMBO_BOX, 5, {lin, aces_cc, aces_cct, logc3, logc4, di}, {Linear, ACEScc, ACEScct, LogC3, LogC4, DaVinci Intermediate})
+
+__DEVICE__ float3 transform(int p_Width, int p_Height, int p_X, int p_Y, float p_R, float p_G, float p_B) {
+    float3 out = make_float3(p_R, p_G, p_B);
+
+    // If exposure isn't changed, return original image
+    if (p_Exp == 0) return out;
+
+    // Go from the encoded Transfer Function to linear
+    // if (p_TransferFunction == lin) - Do nothing for linear
+    if (p_TransferFunction == aces_cc)  out = fromACEScc(out);
+    if (p_TransferFunction == aces_cct) out = fromACEScct(out);
+    if (p_TransferFunction == logc3)    out = fromLogC3(out);
+    if (p_TransferFunction == logc4)    out = fromLogC4(out);
+    if (p_TransferFunction == di)       out = fromDWG(out);
+
+    // Apply exposure in stops
+    out *= _powf(2, p_Exp);
+
+    // Go from linear back to the encoded Transfer Function
+    //if (p_TransferFunction == lin) - Do nothing for linear
+    if (p_TransferFunction == aces_cc)  out = toACEScc(out);
+    if (p_TransferFunction == aces_cct) out = toACEScct(out);
+    if (p_TransferFunction == logc3)    out = toLogC3(out);
+    if (p_TransferFunction == logc4)    out = toLogC4(out);
+    if (p_TransferFunction == di)       out = toDWG(out);
+
+    return out;
+}
