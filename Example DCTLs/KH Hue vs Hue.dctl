@@ -1,5 +1,6 @@
 #line 2 // This line makes line numbers appear correctly in the log file
 // DCTL by Kaur Hendrikson
+// Step-by-step explanation can be found here: https://youtu.be/qsiMIpnw48g
 
 __DEVICE__ float3 RGBtoHSL(float3 in) {
     float r = in.x;
